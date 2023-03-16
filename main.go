@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/joho/godotenv"
 	"github.com/sashabaranov/go-openai"
 	"io"
 	"log"
@@ -13,14 +14,28 @@ import (
 	"strings"
 )
 
+const CharLimit = 150
+
 func main() {
-	token := getInput("Provide your OpenAI token")
-	err := validateToken(token)
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	token := os.Getenv("TOKEN")
+	systemContext := os.Getenv("SYSTEM_CONTEXT")
+
+	if token == "" {
+		token = getInput("Provide your OpenAI token")
+	}
+	err = validateToken(token)
 	if err != nil {
 		log.Fatalf("validating token: %s\n", err)
 	}
 
-	systemContext := getInput("System context")
+	if systemContext == "" {
+		systemContext = getInput("System context")
+	}
+
 	c := openai.NewClient(token)
 	ctx := context.Background()
 
@@ -28,25 +43,21 @@ func main() {
 		prompt := getInput("Prompt")
 		req := openai.ChatCompletionRequest{
 			Model: openai.GPT3Dot5Turbo,
-			Messages: []openai.ChatCompletionMessage{{
-				Role:    "user",
-				Content: prompt,
-			}},
+			Messages: []openai.ChatCompletionMessage{
+				{
+					Role:    "user",
+					Content: prompt,
+				},
+				{
+					Role:    "system",
+					Content: systemContext,
+				},
+			},
 			N:           1,
 			MaxTokens:   1024,
 			Temperature: 0.6,
 			Stream:      true,
-		}
-		if systemContext != "" {
-			req.Messages = append(req.Messages, openai.ChatCompletionMessage{
-				Role:    "system",
-				Content: systemContext,
-			})
-		} else {
-			req.Messages = append(req.Messages, openai.ChatCompletionMessage{
-				Role:    "system",
-				Content: "You're GoGPT, a great golang code assistant.",
-			})
+			Stop:        []string{"o"},
 		}
 
 		stream, err := c.CreateChatCompletionStream(ctx, req)
@@ -60,7 +71,7 @@ func main() {
 
 		defer stream.Close()
 
-		LineCharLimit := 100
+		LineCharLimit := CharLimit
 		CurrentLineLength := 0
 		var wordsInLine []string
 
@@ -77,7 +88,7 @@ func main() {
 			incomingStr := response.Choices[0].Delta.Content
 			CurrentLineLength += len(incomingStr)
 			wordsInLine = append(wordsInLine, incomingStr)
-			fmt.Printf(incomingStr)
+			fmt.Print(incomingStr)
 			if CurrentLineLength >= LineCharLimit {
 				fmt.Println()
 				CurrentLineLength = 0
