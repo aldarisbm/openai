@@ -22,6 +22,26 @@ type ChatBot struct {
 	client        *openai.Client
 }
 
+func (b ChatBot) getRequest(ctx context.Context, prompt string) openai.ChatCompletionRequest {
+	req := openai.ChatCompletionRequest{
+		Model: openai.GPT3Dot5Turbo,
+		Messages: []openai.ChatCompletionMessage{
+			{
+				Role:    "user",
+				Content: prompt,
+			},
+			{
+				Role:    "system",
+				Content: b.systemContext,
+			},
+		},
+		N:           1,
+		MaxTokens:   1024,
+		Temperature: 0.6,
+		Stream:      true,
+	}
+}
+
 func main() {
 	bot := setup()
 	ctx := context.Background()
@@ -29,23 +49,7 @@ func main() {
 	fmt.Printf("system:%s\n", bot.systemContext)
 	for {
 		prompt := getInput("Prompt")
-		req := openai.ChatCompletionRequest{
-			Model: openai.GPT3Dot5Turbo,
-			Messages: []openai.ChatCompletionMessage{
-				{
-					Role:    "user",
-					Content: prompt,
-				},
-				{
-					Role:    "system",
-					Content: bot.systemContext,
-				},
-			},
-			N:           1,
-			MaxTokens:   1024,
-			Temperature: 0.6,
-			Stream:      true,
-		}
+		req := bot.getRequest(ctx, prompt)
 
 		stream, err := bot.client.CreateChatCompletionStream(ctx, req)
 		if err != nil {
@@ -53,11 +57,11 @@ func main() {
 		}
 
 		if stream.GetResponse().StatusCode == http.StatusBadRequest {
-			fmt.Printf("check: %v\n", stream.GetResponse())
+			fmt.Printf("bad request: %v\n", stream.GetResponse())
 		}
 
 		if stream.GetResponse().StatusCode != http.StatusOK {
-			fmt.Printf("check: %v\n", stream.GetResponse())
+			fmt.Printf("non 200 resp: %v\n", stream.GetResponse())
 		}
 		defer stream.Close()
 
