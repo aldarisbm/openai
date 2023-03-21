@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/joho/godotenv"
 	"github.com/sashabaranov/go-openai"
 	"io"
 	"log"
@@ -16,30 +15,18 @@ import (
 
 const CharLimit = 150
 
+type ChatBot struct {
+	apiToken      string
+	systemContext string
+	chatContext   ChatContext
+	client        *openai.Client
+}
+
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-	token := os.Getenv("TOKEN")
-	systemContext := os.Getenv("SYSTEM_CONTEXT")
-
-	if token == "" {
-		token = getInput("Provide your OpenAI token")
-	}
-	err = validateToken(token)
-	if err != nil {
-		log.Fatalf("validating token: %s\n", err)
-	}
-
-	if systemContext == "" {
-		systemContext = getInput("System context")
-	}
-
-	c := openai.NewClient(token)
+	bot := setup()
 	ctx := context.Background()
 
-	fmt.Printf("system:%s\n", systemContext)
+	fmt.Printf("system:%s\n", bot.systemContext)
 	for {
 		prompt := getInput("Prompt")
 		req := openai.ChatCompletionRequest{
@@ -51,7 +38,7 @@ func main() {
 				},
 				{
 					Role:    "system",
-					Content: systemContext,
+					Content: bot.systemContext,
 				},
 			},
 			N:           1,
@@ -60,7 +47,7 @@ func main() {
 			Stream:      true,
 		}
 
-		stream, err := c.CreateChatCompletionStream(ctx, req)
+		stream, err := bot.client.CreateChatCompletionStream(ctx, req)
 		if err != nil {
 			fmt.Printf("ChatCompletionStream error: %v\n", err)
 		}
