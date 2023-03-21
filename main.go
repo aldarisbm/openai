@@ -39,6 +39,7 @@ func main() {
 	c := openai.NewClient(token)
 	ctx := context.Background()
 
+	fmt.Printf("system:%s\n", systemContext)
 	for {
 		prompt := getInput("Prompt")
 		req := openai.ChatCompletionRequest{
@@ -57,7 +58,6 @@ func main() {
 			MaxTokens:   1024,
 			Temperature: 0.6,
 			Stream:      true,
-			Stop:        []string{"o"},
 		}
 
 		stream, err := c.CreateChatCompletionStream(ctx, req)
@@ -69,6 +69,9 @@ func main() {
 			fmt.Printf("check: %v\n", stream.GetResponse())
 		}
 
+		if stream.GetResponse().StatusCode != http.StatusOK {
+			fmt.Printf("check: %v\n", stream.GetResponse())
+		}
 		defer stream.Close()
 
 		LineCharLimit := CharLimit
