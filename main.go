@@ -1,68 +1,14 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"errors"
 	"fmt"
-	"github.com/sashabaranov/go-openai"
 	"io"
-	"log"
 	"net/http"
-	"os"
-	"strings"
 )
 
 const CharLimit = 150
-
-type ChatBot struct {
-	apiToken          string
-	systemContext     string
-	chatContext       ChatContext
-	client            *openai.Client
-	lastEntireMessage string
-}
-
-func (b ChatBot) getRequest(prompt string) openai.ChatCompletionRequest {
-	req := openai.ChatCompletionRequest{
-		Model: openai.GPT3Dot5Turbo,
-		Messages: []openai.ChatCompletionMessage{
-			{
-				Role:    "system",
-				Content: b.systemContext,
-			},
-			{
-				Role:    "user",
-				Content: prompt,
-			},
-		},
-		N:           1,
-		MaxTokens:   1024,
-		Temperature: 0.5,
-		Stream:      true,
-	}
-
-	if len(b.chatContext.Messages) > b.chatContext.MaxPriorMessages {
-		// Remove the oldest message.
-		b.chatContext.Messages = b.chatContext.Messages[1:]
-	}
-
-	for i, message := range b.chatContext.Messages {
-		oldest := len(b.chatContext.Messages) - i
-		message.Content = fmt.Sprintf("%d: %s", oldest, message.Content)
-		req.Messages = append(req.Messages, message)
-	}
-	return req
-}
-
-func (b ChatBot) processEntireMessage() {
-	currentSummary := getSummaryBetweenThreeBrackets(b.lastEntireMessage)
-	b.chatContext.Messages = append(b.chatContext.Messages, openai.ChatCompletionMessage{
-		Role:    b.chatContext.Role,
-		Content: currentSummary,
-	})
-	b.lastEntireMessage = ""
-}
 
 func main() {
 	bot := setup()
@@ -81,13 +27,10 @@ func main() {
 			fmt.Printf("ChatCompletionStream error: %v\n", err)
 		}
 
-		if stream.GetResponse().StatusCode == http.StatusBadRequest {
-			fmt.Printf("bad request: %v\n", stream.GetResponse())
-		}
-
 		if stream.GetResponse().StatusCode != http.StatusOK {
 			fmt.Printf("non 200 resp: %v\n", stream.GetResponse())
 		}
+
 		defer stream.Close()
 
 		LineCharLimit := CharLimit
@@ -95,11 +38,10 @@ func main() {
 		var wordsInLine []string
 
 		for {
-
 			response, err := stream.Recv()
 			if errors.Is(err, io.EOF) {
 				bot.processEntireMessage()
-				fmt.Println()
+				bot.lastEntireMessage = ""
 				break
 			}
 			if err != nil {
@@ -116,23 +58,4 @@ func main() {
 			}
 		}
 	}
-}
-
-func getInput(s string) string {
-	fmt.Print(fmt.Sprintf("%s:", s))
-	reader := bufio.NewReader(os.Stdin)
-	token, err := reader.ReadString('\n')
-	if err != nil {
-		log.Panic(err)
-	}
-	trimmedInput := strings.TrimSpace(token)
-
-	return trimmedInput
-}
-
-func validateToken(token string) error {
-	if len(token) != 51 {
-		return InvalidTokenError
-	}
-	return nil
 }

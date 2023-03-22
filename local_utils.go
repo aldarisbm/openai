@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/sashabaranov/go-openai"
 	"log"
@@ -46,7 +48,7 @@ func setup() *ChatBot {
 	return &ChatBot{
 		apiToken:      token,
 		systemContext: systemContext,
-		chatContext: ChatContext{
+		chatContext: &ChatContext{
 			Role:             chatContextRole,
 			MaxPriorMessages: maxPriorMessages,
 		},
@@ -61,5 +63,24 @@ func getSummaryBetweenThreeBrackets(message string) string {
 	if start != -1 && end != -1 {
 		sum = message[start+3 : end]
 	}
-	return sum
+	return fmt.Sprintf("[[[%s]]]", sum)
+}
+
+func getInput(s string) string {
+	fmt.Print(fmt.Sprintf("%s:", s))
+	reader := bufio.NewReader(os.Stdin)
+	token, err := reader.ReadString('\n')
+	if err != nil {
+		log.Panic(err)
+	}
+	trimmedInput := strings.TrimSpace(token)
+
+	return trimmedInput
+}
+
+func validateToken(token string) error {
+	if len(token) != 51 {
+		return InvalidTokenError
+	}
+	return nil
 }
