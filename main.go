@@ -47,7 +47,9 @@ func (b ChatBot) getRequest(prompt string) openai.ChatCompletionRequest {
 		b.chatContext.Messages = b.chatContext.Messages[1:]
 	}
 
-	for _, message := range b.chatContext.Messages {
+	for i, message := range b.chatContext.Messages {
+		oldest := len(b.chatContext.Messages) - i
+		message.Content = fmt.Sprintf("%d: %s", oldest, message.Content)
 		req.Messages = append(req.Messages, message)
 	}
 	return req
