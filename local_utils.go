@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 )
 
 // setup is a function that sets up the environment, and returns a ChatBot.
@@ -51,4 +52,14 @@ func setup() *ChatBot {
 		},
 		client: c,
 	}
+}
+
+func getSummaryBetweenThreeBrackets(message string) string {
+	sum := ""
+	start := strings.Index(message, "[[[")
+	end := strings.Index(message, "]]]")
+	if start != -1 && end != -1 {
+		sum = message[start+3 : end]
+	}
+	return sum
 }

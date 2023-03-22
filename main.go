@@ -54,22 +54,12 @@ func (b ChatBot) getRequest(prompt string) openai.ChatCompletionRequest {
 }
 
 func (b ChatBot) processEntireMessage() {
-	currentSummary := getSummaryBetweenBrackets(b.lastEntireMessage)
+	currentSummary := getSummaryBetweenThreeBrackets(b.lastEntireMessage)
 	b.chatContext.Messages = append(b.chatContext.Messages, openai.ChatCompletionMessage{
 		Role:    b.chatContext.Role,
 		Content: currentSummary,
 	})
 	b.lastEntireMessage = ""
-}
-
-func getSummaryBetweenBrackets(message string) string {
-	sum := ""
-	start := strings.Index(message, "[[[")
-	end := strings.Index(message, "]]]")
-	if start != -1 && end != -1 {
-		sum = message[start+3 : end]
-	}
-	return sum
 }
 
 func main() {
