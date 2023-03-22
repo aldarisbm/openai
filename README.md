@@ -1,7 +1,7 @@
 
 # ChatBot GPT-3.5-Turbo 
 
-This README file provides an overview of a chatbot script written in Go. The script includes a single `setup` function that initializes a new `ChatBot` instance, using the OpenAI API to communicate with the GPT-3.5-Turbo model.
+This README file provides an overview of a ChatBot script written in Go. The script attempts to keep some context on prior api calls, the length of context messages, can be changed in the `.env` file The script includes a single `setup` function that initializes a new `ChatBot` instance, using the OpenAI API to communicate with the GPT-3.5-Turbo model.
 
 ## Function: setup()
 
