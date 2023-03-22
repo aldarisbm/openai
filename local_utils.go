@@ -5,6 +5,7 @@ import (
 	"github.com/sashabaranov/go-openai"
 	"log"
 	"os"
+	"strconv"
 )
 
 // setup is a function that sets up the environment, and returns a ChatBot.
@@ -15,15 +16,21 @@ func setup() *ChatBot {
 		log.Fatal("Error loading .env file")
 	}
 
-	// Get the token from the .env file.
 	token := os.Getenv("TOKEN")
-
-	// Get the system context from the .env file.
 	systemContext := os.Getenv("SYSTEM_CONTEXT")
+	maxPriorMessagesString := os.Getenv("MAX_PRIOR_MESSAGES")
+	maxPriorMessages, err := strconv.Atoi(maxPriorMessagesString)
+	if err != nil {
+		panic(err)
+	}
+	chatContextRole := os.Getenv("CHAT_CONTEXT_ROLE")
 
 	// If the token is empty, get it from the user.
 	if token == "" {
 		token = getInput("Provide your OpenAI token")
+	}
+	if err = validateToken(token); err != nil {
+		panic(err)
 	}
 
 	// If the system context is empty, get it from the user.
@@ -39,7 +46,8 @@ func setup() *ChatBot {
 		apiToken:      token,
 		systemContext: systemContext,
 		chatContext: ChatContext{
-			MaxMessages: 2,
+			Role:             chatContextRole,
+			MaxPriorMessages: maxPriorMessages,
 		},
 		client: c,
 	}

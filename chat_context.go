@@ -1,18 +1,15 @@
 package main
 
+import "github.com/sashabaranov/go-openai"
+
 // ChatContext represents a chat context.
 type ChatContext struct {
 	// Messages is a list of messages that have been exchanged so far.
-	Messages []ChatCompletionMessage `json:"messages"`
+	Messages []openai.ChatCompletionMessage `json:"messages"`
 
-	// MaxMessages
-	MaxMessages int `json:"max_messages"`
-}
+	//Role is the role of the chat context. it defaults to "user"
+	Role string
 
-// ChatCompletionMessage represents prior messages in a chat context.
-type ChatCompletionMessage struct {
-	// Role is the role of the message sender. it defaults to "system"
-	Role string `json:"role"`
-
-	Message string `json:"message"`
+	// MaxPriorMessages is the maximum number of prior messages to include in the chat context.
+	MaxPriorMessages int `json:"max_prior_messages"`
 }

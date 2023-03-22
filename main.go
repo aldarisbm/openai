@@ -16,30 +16,60 @@ import (
 const CharLimit = 150
 
 type ChatBot struct {
-	apiToken      string
-	systemContext string
-	chatContext   ChatContext
-	client        *openai.Client
+	apiToken          string
+	systemContext     string
+	chatContext       ChatContext
+	client            *openai.Client
+	lastEntireMessage string
 }
 
-func (b ChatBot) getRequest(ctx context.Context, prompt string) openai.ChatCompletionRequest {
+func (b ChatBot) getRequest(prompt string) openai.ChatCompletionRequest {
 	req := openai.ChatCompletionRequest{
 		Model: openai.GPT3Dot5Turbo,
 		Messages: []openai.ChatCompletionMessage{
 			{
-				Role:    "user",
-				Content: prompt,
-			},
-			{
 				Role:    "system",
 				Content: b.systemContext,
+			},
+			{
+				Role:    "user",
+				Content: prompt,
 			},
 		},
 		N:           1,
 		MaxTokens:   1024,
-		Temperature: 0.6,
+		Temperature: 0.5,
 		Stream:      true,
 	}
+
+	if len(b.chatContext.Messages) > b.chatContext.MaxPriorMessages {
+		// Remove the oldest message.
+		b.chatContext.Messages = b.chatContext.Messages[1:]
+	}
+
+	for _, message := range b.chatContext.Messages {
+		req.Messages = append(req.Messages, message)
+	}
+	return req
+}
+
+func (b ChatBot) processEntireMessage() {
+	currentSummary := getSummaryBetweenBrackets(b.lastEntireMessage)
+	b.chatContext.Messages = append(b.chatContext.Messages, openai.ChatCompletionMessage{
+		Role:    b.chatContext.Role,
+		Content: currentSummary,
+	})
+	b.lastEntireMessage = ""
+}
+
+func getSummaryBetweenBrackets(message string) string {
+	sum := ""
+	start := strings.Index(message, "[[[")
+	end := strings.Index(message, "]]]")
+	if start != -1 && end != -1 {
+		sum = message[start+3 : end]
+	}
+	return sum
 }
 
 func main() {
@@ -49,7 +79,10 @@ func main() {
 	fmt.Printf("system:%s\n", bot.systemContext)
 	for {
 		prompt := getInput("Prompt")
-		req := bot.getRequest(ctx, prompt)
+		if prompt == "" {
+			continue
+		}
+		req := bot.getRequest(prompt)
 
 		stream, err := bot.client.CreateChatCompletionStream(ctx, req)
 		if err != nil {
@@ -73,6 +106,7 @@ func main() {
 
 			response, err := stream.Recv()
 			if errors.Is(err, io.EOF) {
+				bot.processEntireMessage()
 				fmt.Println()
 				break
 			}
@@ -80,6 +114,7 @@ func main() {
 				fmt.Printf("Stream error: %v\n", err)
 			}
 			incomingStr := response.Choices[0].Delta.Content
+			bot.lastEntireMessage += incomingStr
 			CurrentLineLength += len(incomingStr)
 			wordsInLine = append(wordsInLine, incomingStr)
 			fmt.Print(incomingStr)
@@ -107,6 +142,5 @@ func validateToken(token string) error {
 	if len(token) != 51 {
 		return fmt.Errorf("invalid token length")
 	}
-
 	return nil
 }
