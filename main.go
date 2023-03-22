@@ -130,7 +130,7 @@ func getInput(s string) string {
 
 func validateToken(token string) error {
 	if len(token) != 51 {
-		return fmt.Errorf("invalid token length")
+		return InvalidTokenError
 	}
 	return nil
 }
