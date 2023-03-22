@@ -47,7 +47,6 @@ func (b ChatBot) getRequest(prompt string) openai.ChatCompletionRequest {
 
 func (b ChatBot) processEntireMessage() {
 	currentSummary := getSummaryBetweenThreeBrackets(b.lastEntireMessage)
-	fmt.Println(currentSummary)
 	b.chatContext.Messages = append(b.chatContext.Messages, openai.ChatCompletionMessage{
 		Role:    b.chatContext.Role,
 		Content: currentSummary,

@@ -42,6 +42,7 @@ func main() {
 			if errors.Is(err, io.EOF) {
 				bot.processEntireMessage()
 				bot.lastEntireMessage = ""
+				fmt.Println()
 				break
 			}
 			if err != nil {
