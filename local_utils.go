@@ -36,7 +36,11 @@ func setup() *ChatBot {
 }
 
 func populateEnvironment() {
-	err := godotenv.Load()
+	envFileLoc := os.Getenv("ENV_FILE")
+	if envFileLoc != "" {
+		panic("ENV_FILE is not set")
+	}
+	err := godotenv.Load(envFileLoc)
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
