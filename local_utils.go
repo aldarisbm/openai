@@ -11,20 +11,44 @@ import (
 	"strings"
 )
 
+const MaxPriorMessages = 5
+
+type Environment struct {
+	Token            string
+	SystemContext    string
+	MaxPriorMessages int
+	ChatContextRole  string
+}
+
 // setup is a function that sets up the environment, and returns a ChatBot.
 func setup() *ChatBot {
-	// Load the .env file.
+	populateEnvironment()
+	Env := NewEnvironment()
+	return &ChatBot{
+		apiToken:      Env.Token,
+		systemContext: Env.SystemContext,
+		chatContext: &ChatContext{
+			Role:             Env.ChatContextRole,
+			MaxPriorMessages: Env.MaxPriorMessages,
+		},
+		client: openai.NewClient(Env.Token),
+	}
+}
+
+func populateEnvironment() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+}
 
+func NewEnvironment() *Environment {
 	token := os.Getenv("TOKEN")
 	systemContext := os.Getenv("SYSTEM_CONTEXT")
 	maxPriorMessagesString := os.Getenv("MAX_PRIOR_MESSAGES")
 	maxPriorMessages, err := strconv.Atoi(maxPriorMessagesString)
 	if err != nil {
-		panic(err)
+		maxPriorMessages = MaxPriorMessages
 	}
 	chatContextRole := os.Getenv("CHAT_CONTEXT_ROLE")
 
@@ -40,19 +64,11 @@ func setup() *ChatBot {
 	if systemContext == "" {
 		systemContext = getInput("System context")
 	}
-
-	// Create a new ChatBot.
-	c := openai.NewClient(token)
-
-	// Return the ChatBot.
-	return &ChatBot{
-		apiToken:      token,
-		systemContext: systemContext,
-		chatContext: &ChatContext{
-			Role:             chatContextRole,
-			MaxPriorMessages: maxPriorMessages,
-		},
-		client: c,
+	return &Environment{
+		Token:            token,
+		SystemContext:    systemContext,
+		MaxPriorMessages: maxPriorMessages,
+		ChatContextRole:  chatContextRole,
 	}
 }
 
