@@ -2,22 +2,24 @@ package main
 
 import (
 	"bufio"
+	"bytes"
+	"embed"
 	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/sashabaranov/go-openai"
+	"io/fs"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 )
 
+//go:embed .env
+var envFile embed.FS
+
 // setup is a function that sets up the environment, and returns a ChatBot.
 func setup() *ChatBot {
-	// Load the .env file.
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	populateEnvironment()
 
 	token := os.Getenv("TOKEN")
 	systemContext := os.Getenv("SYSTEM_CONTEXT")
@@ -53,6 +55,26 @@ func setup() *ChatBot {
 			MaxPriorMessages: maxPriorMessages,
 		},
 		client: c,
+	}
+}
+
+func populateEnvironment() {
+	// Read the embedded .env file
+	data, err := fs.ReadFile(envFile, ".env")
+	if err != nil {
+		log.Fatalf("Error reading embedded .env file: %v", err)
+	}
+
+	// Use a bytes.Buffer to create an io.Reader for the .env data
+	envReader := bytes.NewReader(data)
+	// Load the .env file.
+	envVars, err := godotenv.Parse(envReader)
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	for key, value := range envVars {
+		os.Setenv(key, value)
 	}
 }
 
