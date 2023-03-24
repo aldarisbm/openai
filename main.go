@@ -14,7 +14,7 @@ func main() {
 	bot := setup()
 	ctx := context.Background()
 
-	fmt.Printf("system:%s\n", bot.systemContext)
+	fmt.Println("Welcome to the OpenAI Chat Completion")
 	for {
 		prompt := getInput("Prompt")
 		if prompt == "" {
