@@ -28,7 +28,8 @@ func main() {
 		}
 
 		if stream.GetResponse().StatusCode != http.StatusOK {
-			fmt.Printf("non 200 resp: %v\n", stream.GetResponse())
+			body, _ := io.ReadAll(stream.GetResponse().Body)
+			fmt.Printf("non 200 resp: %v\n", string(body))
 		}
 
 		defer stream.Close()

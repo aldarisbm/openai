@@ -11,11 +11,12 @@ type ChatBot struct {
 	chatContext       *ChatContext
 	client            *openai.Client
 	lastEntireMessage string
+	model             string
 }
 
 func (b ChatBot) getRequest(prompt string) openai.ChatCompletionRequest {
 	req := openai.ChatCompletionRequest{
-		Model: openai.GPT3Dot5Turbo,
+		Model: b.model,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    "system",
@@ -23,7 +24,7 @@ func (b ChatBot) getRequest(prompt string) openai.ChatCompletionRequest {
 			},
 		},
 		N:           1,
-		MaxTokens:   2048,
+		MaxTokens:   0,
 		Temperature: 0.5,
 		Stream:      true,
 	}
