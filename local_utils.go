@@ -18,6 +18,7 @@ type Environment struct {
 	SystemContext    string
 	MaxPriorMessages int
 	ChatContextRole  string
+	Model            string
 }
 
 // setup is a function that sets up the environment, and returns a ChatBot.
@@ -32,6 +33,7 @@ func setup() *ChatBot {
 			MaxPriorMessages: Env.MaxPriorMessages,
 		},
 		client: openai.NewClient(Env.Token),
+		model:  Env.Model,
 	}
 }
 
@@ -69,12 +71,27 @@ func NewEnvironment() *Environment {
 	if systemContext == "" {
 		systemContext = getInput("System context")
 	}
+	model := getModel()
 	return &Environment{
 		Token:            token,
 		SystemContext:    systemContext,
 		MaxPriorMessages: maxPriorMessages,
 		ChatContextRole:  chatContextRole,
+		Model:            model,
 	}
+}
+
+func getModel() string {
+	enableGPT4String := os.Getenv("ENABLE_GPT_4")
+	isChatGPT4Enabled, err := strconv.ParseBool(enableGPT4String)
+	if err != nil {
+		panic(err)
+	}
+	if isChatGPT4Enabled {
+		return openai.GPT4
+	}
+	return openai.GPT3Dot5Turbo
+
 }
 
 func getSummaryBetweenThreeBrackets(message string) string {
