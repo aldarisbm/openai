@@ -53,3 +53,7 @@ func (b ChatBot) processEntireMessage() {
 		Content: currentSummary,
 	})
 }
+
+func (b ChatBot) ClearMessages() {
+	b.chatContext.Messages = []openai.ChatCompletionMessage{}
+}
