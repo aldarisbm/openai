@@ -21,6 +21,11 @@ func main() {
 		if prompt == "" {
 			continue
 		}
+		if prompt == "clear" || prompt == "c" {
+			bot.ClearMessages()
+			fmt.Println("Messages cleared...")
+			continue
+		}
 		req := bot.getRequest(prompt)
 
 		stream, err := bot.client.CreateChatCompletionStream(ctx, req)
