@@ -7,10 +7,13 @@ import (
 
 const MaxPriorMessages = 5
 
+const DefaultPrompt = "You're a helpful assistant, you value conciseness over anything, unless instructed otherwise."
+
 type Environment struct {
 	Token            string
 	MaxPriorMessages int
 	Model            string
+	SystemPrompt     string
 }
 
 func GetEnvironment() *Environment {
@@ -19,6 +22,10 @@ func GetEnvironment() *Environment {
 	maxPriorMessages, err := strconv.Atoi(maxPriorMessagesString)
 	if err != nil {
 		maxPriorMessages = MaxPriorMessages
+	}
+	systemPrompt := os.Getenv("SYSTEM_PROMPT")
+	if systemPrompt == "" {
+		systemPrompt = DefaultPrompt
 	}
 
 	if token == "" {
@@ -33,5 +40,6 @@ func GetEnvironment() *Environment {
 		Token:            token,
 		MaxPriorMessages: maxPriorMessages,
 		Model:            model,
+		SystemPrompt:     systemPrompt,
 	}
 }

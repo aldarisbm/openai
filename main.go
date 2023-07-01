@@ -13,11 +13,13 @@ func main() {
 	bot := New()
 	ctx := context.Background()
 
-	fmt.Printf("model: %s\nmax message history: %d\n\n", bot.model, bot.chatContext.MaxPriorMessages)
+	fmt.Printf("model: %s\nsystem prompt: %s\nmax message history: %d\n\n", bot.model, bot.GetPrompt(), bot.chatContext.MaxPriorMessages)
 
 	for {
 		prompt := getUserInput("Prompt")
 		switch prompt {
+		case "history":
+			bot.PrintHistory()
 		case "":
 			continue
 		case "q", "quit", "exit":

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/sashabaranov/go-openai"
 )
 
@@ -11,16 +12,17 @@ const (
 
 // ChatBot represents a chatbot.
 type ChatBot struct {
-	apiToken    string
-	chatContext *ChatContext
-	client      *openai.Client
-	model       string
+	apiToken     string
+	chatContext  *ChatContext
+	client       *openai.Client
+	model        string
+	systemPrompt string
 }
 
 // ChatContext represents a chat context.
 type ChatContext struct {
-	Messages         []openai.ChatCompletionMessage `json:"messages"`
-	MaxPriorMessages int                            `json:"max_prior_messages"`
+	Messages         []openai.ChatCompletionMessage
+	MaxPriorMessages int
 }
 
 func New() *ChatBot {
@@ -30,9 +32,14 @@ func New() *ChatBot {
 		chatContext: &ChatContext{
 			MaxPriorMessages: env.MaxPriorMessages,
 		},
-		client: openai.NewClient(env.Token),
-		model:  env.Model,
+		systemPrompt: env.SystemPrompt,
+		client:       openai.NewClient(env.Token),
+		model:        env.Model,
 	}
+}
+
+func (b ChatBot) GetPrompt() string {
+	return b.systemPrompt
 }
 
 func (b ChatBot) GetRequest(prompt string) openai.ChatCompletionRequest {
@@ -61,7 +68,7 @@ func (b ChatBot) getBaseMessage() openai.ChatCompletionRequest {
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    "system",
-				Content: "You're a helpful assistant, you are very concise.",
+				Content: b.systemPrompt,
 			},
 		},
 		N:           1,
@@ -73,4 +80,13 @@ func (b ChatBot) getBaseMessage() openai.ChatCompletionRequest {
 
 func (b ChatBot) appendMessages(req *openai.ChatCompletionRequest) {
 	req.Messages = append(req.Messages, b.chatContext.Messages...)
+}
+
+func (b ChatBot) PrintHistory() {
+	fmt.Println("*************************")
+	fmt.Printf("system prompt: %s\n", b.GetPrompt())
+	for _, msg := range b.chatContext.Messages {
+		fmt.Printf("%s: %s\n", msg.Role, msg.Content)
+	}
+	fmt.Println("*************************")
 }
