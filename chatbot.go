@@ -5,11 +5,6 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
-const (
-	user      = "user"
-	assistant = "assistant"
-)
-
 // ChatBot represents a chatbot.
 type ChatBot struct {
 	apiToken     string
@@ -43,7 +38,7 @@ func (b ChatBot) GetPrompt() string {
 }
 
 func (b ChatBot) GetRequest(prompt string) openai.ChatCompletionRequest {
-	b.saveMessageToContext(user, prompt)
+	b.saveMessageToContext(User, prompt)
 	req := b.getBaseMessage()
 	b.appendMessages(&req)
 	return req
@@ -67,7 +62,7 @@ func (b ChatBot) getBaseMessage() openai.ChatCompletionRequest {
 		Model: b.model,
 		Messages: []openai.ChatCompletionMessage{
 			{
-				Role:    "system",
+				Role:    System,
 				Content: b.systemPrompt,
 			},
 		},

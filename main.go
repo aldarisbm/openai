@@ -57,7 +57,7 @@ func process(ctx context.Context, bot *ChatBot, prompt string) {
 	for {
 		response, err := stream.Recv()
 		if errors.Is(err, io.EOF) && lastMessage != "" {
-			bot.saveMessageToContext(assistant, lastMessage)
+			bot.saveMessageToContext(Assistant, lastMessage)
 			lastMessage = ""
 			fmt.Println()
 			break

@@ -5,10 +5,6 @@ import (
 	"strconv"
 )
 
-const MaxPriorMessages = 5
-
-const DefaultPrompt = "You're a helpful assistant, you value conciseness over anything, unless instructed otherwise."
-
 type Environment struct {
 	Token            string
 	MaxPriorMessages int
