@@ -9,6 +9,7 @@ const (
 	assistant = "assistant"
 )
 
+// ChatBot represents a chatbot.
 type ChatBot struct {
 	apiToken    string
 	chatContext *ChatContext
@@ -16,11 +17,32 @@ type ChatBot struct {
 	model       string
 }
 
-func (b ChatBot) getRequest(prompt string) openai.ChatCompletionRequest {
+// ChatContext represents a chat context.
+type ChatContext struct {
+	Messages         []openai.ChatCompletionMessage `json:"messages"`
+	MaxPriorMessages int                            `json:"max_prior_messages"`
+}
+
+func New() *ChatBot {
+	env := GetEnvironment()
+	return &ChatBot{
+		apiToken: env.Token,
+		chatContext: &ChatContext{
+			MaxPriorMessages: env.MaxPriorMessages,
+		},
+		client: openai.NewClient(env.Token),
+		model:  env.Model,
+	}
+}
+
+func (b ChatBot) GetRequest(prompt string) openai.ChatCompletionRequest {
 	b.saveMessageToContext(user, prompt)
 	req := b.getBaseMessage()
 	b.appendMessages(&req)
 	return req
+}
+func (b ChatBot) ClearMessages() {
+	b.chatContext.Messages = []openai.ChatCompletionMessage{}
 }
 
 func (b ChatBot) saveMessageToContext(role, msg string) {
@@ -31,10 +53,6 @@ func (b ChatBot) saveMessageToContext(role, msg string) {
 	if len(b.chatContext.Messages) > b.chatContext.MaxPriorMessages {
 		b.chatContext.Messages = b.chatContext.Messages[len(b.chatContext.Messages)-b.chatContext.MaxPriorMessages:]
 	}
-}
-
-func (b ChatBot) ClearMessages() {
-	b.chatContext.Messages = []openai.ChatCompletionMessage{}
 }
 
 func (b ChatBot) getBaseMessage() openai.ChatCompletionRequest {

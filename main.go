@@ -13,9 +13,10 @@ func main() {
 	bot := New()
 	ctx := context.Background()
 
-	fmt.Printf("You're using: %s, max message history: %d \n", bot.model, bot.chatContext.MaxPriorMessages)
+	fmt.Printf("model: %s\nmax message history: %d\n\n", bot.model, bot.chatContext.MaxPriorMessages)
+
 	for {
-		prompt := getInput("Prompt")
+		prompt := getUserInput("Prompt")
 		if prompt == "" {
 			continue
 		}
@@ -25,7 +26,7 @@ func main() {
 			continue
 		}
 
-		req := bot.getRequest(prompt)
+		req := bot.GetRequest(prompt)
 
 		stream, err := bot.client.CreateChatCompletionStream(ctx, req)
 		if err != nil {
@@ -40,7 +41,6 @@ func main() {
 			}
 			fmt.Printf("non 200 resp: %v\n", string(body))
 		}
-
 		defer stream.Close()
 
 		var lastMessage string
