@@ -1,7 +1,7 @@
 
 # chatbot in your terminal 
 
-This README file provides an overview of a ChatBot script written in Go. The script attempts to keep some context on prior api calls, the length of context messages, can be changed in the `.env` file The script includes a single `setup` function that initializes a new `ChatBot` instance, using the OpenAI API to communicate with the GPT-3.5-Turbo model.
+Binary in go to use the openai api to create a chatbot in your terminal
 
 ## Function: New()
 The `New()` returns a new Chatbot 
