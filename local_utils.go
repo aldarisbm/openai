@@ -19,9 +19,7 @@ type Environment struct {
 	Model            string
 }
 
-// setup is a function that sets up the environment, and returns a ChatBot.
-func setup() *ChatBot {
-	populateEnvironment()
+func New() *ChatBot {
 	env := NewEnvironment()
 	return &ChatBot{
 		apiToken: env.Token,
@@ -33,7 +31,7 @@ func setup() *ChatBot {
 	}
 }
 
-func populateEnvironment() {
+func loadEnvFile() {
 	envFileLoc := os.Getenv("OPENAPI_ENV_FILE")
 	if envFileLoc == "" {
 		panic("ENV_FILE is not set")

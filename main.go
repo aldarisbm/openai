@@ -9,7 +9,8 @@ import (
 )
 
 func main() {
-	bot := setup()
+	loadEnvFile()
+	bot := New()
 	ctx := context.Background()
 
 	fmt.Printf("You're using: %s, max message history: %d \n", bot.model, bot.chatContext.MaxPriorMessages)
