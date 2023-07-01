@@ -4,7 +4,6 @@
 This README file provides an overview of a ChatBot script written in Go. The script attempts to keep some context on prior api calls, the length of context messages, can be changed in the `.env` file The script includes a single `setup` function that initializes a new `ChatBot` instance, using the OpenAI API to communicate with the GPT-3.5-Turbo model.
 
 ## Function: setup()
-
 The `setup()` function initializes a new ChatBot instance with the necessary configurations, such as the API token, system context, and chat context role. It returns a pointer to the newly created ChatBot.
 
 ### Loading environment variables
@@ -12,13 +11,11 @@ The `setup()` function initializes a new ChatBot instance with the necessary con
 The function first attempts to load environment variables from a `.env` file using the `godotenv` package. If the file cannot be loaded, the script will log a fatal error and exit. The expected environment variables are:
 
 - `TOKEN`: The OpenAI API token
-- `SYSTEM_CONTEXT`: The system context for the chatbot
 - `MAX_PRIOR_MESSAGES`: The maximum number of prior messages to be considered for context
-- `CHAT_CONTEXT_ROLE`: The role of the chatbot in the conversation
 
 ### User input
 
-If the `TOKEN` or `SYSTEM_CONTEXT` environment variables are not provided, the function prompts the user to enter them manually.
+If the `TOKEN` environment variable is not provided, the function prompts the user to enter it manually.
 
 ### Validating the API token
 
@@ -29,7 +26,6 @@ The function checks the validity of the API token using the `validateToken` func
 The function creates a new instance of the `openai.Client` with the provided token and initializes a `ChatBot` instance with the necessary fields. The `ChatBot` structure contains:
 
 - `apiToken`: The OpenAI API token
-- `systemContext`: The system context for the chatbot
 - `chatContext`: A `ChatContext` struct that includes the chatbot role and the maximum number of prior messages
 - `client`: An instance of the `openai.Client`
 

@@ -1,59 +1,61 @@
 package main
 
 import (
-	"fmt"
 	"github.com/sashabaranov/go-openai"
 )
 
+const (
+	user      = "user"
+	assistant = "assistant"
+)
+
 type ChatBot struct {
-	apiToken          string
-	systemContext     string
-	chatContext       *ChatContext
-	client            *openai.Client
-	lastEntireMessage string
-	model             string
+	apiToken    string
+	chatContext *ChatContext
+	client      *openai.Client
+	model       string
 }
 
 func (b ChatBot) getRequest(prompt string) openai.ChatCompletionRequest {
-	req := openai.ChatCompletionRequest{
-		Model: b.model,
-		Messages: []openai.ChatCompletionMessage{
-			{
-				Role:    "system",
-				Content: b.systemContext,
-			},
-		},
-		N:           1,
-		MaxTokens:   0,
-		Temperature: 0.5,
-		Stream:      true,
-	}
-
-	if len(b.chatContext.Messages) > b.chatContext.MaxPriorMessages {
-		// Remove the oldest message.
-		b.chatContext.Messages = b.chatContext.Messages[1:]
-	}
-
-	for _, message := range b.chatContext.Messages {
-		message.Content = fmt.Sprintf("%s", message.Content)
-		req.Messages = append(req.Messages, message)
-	}
-	req.Messages = append(req.Messages, openai.ChatCompletionMessage{
-		Role:    "user",
-		Content: prompt,
-	})
-
+	b.saveMessage(user, prompt)
+	req := b.getMessage()
+	b.appendMessages(&req)
 	return req
 }
 
-func (b ChatBot) processEntireMessage() {
-	currentSummary := getSummaryBetweenThreeBrackets(b.lastEntireMessage)
+func (b ChatBot) saveMessage(role, msg string) {
 	b.chatContext.Messages = append(b.chatContext.Messages, openai.ChatCompletionMessage{
-		Role:    b.chatContext.Role,
-		Content: currentSummary,
+		Role:    role,
+		Content: msg,
 	})
 }
 
 func (b ChatBot) ClearMessages() {
 	b.chatContext.Messages = []openai.ChatCompletionMessage{}
+}
+
+func (b ChatBot) getMessage() openai.ChatCompletionRequest {
+	return openai.ChatCompletionRequest{
+		Model: b.model,
+		Messages: []openai.ChatCompletionMessage{
+			{
+				Role:    "system",
+				Content: "You're a helpful assistant, you are very concise.",
+			},
+		},
+		N:           1,
+		MaxTokens:   0,
+		Temperature: 0.2,
+		Stream:      true,
+	}
+}
+
+func (b ChatBot) appendMessages(req *openai.ChatCompletionRequest) {
+	if len(b.chatContext.Messages) <= b.chatContext.MaxPriorMessages {
+		req.Messages = append(req.Messages, b.chatContext.Messages...)
+		return
+	} else {
+		req.Messages = append(req.Messages, b.chatContext.Messages[:b.chatContext.MaxPriorMessages]...)
+		b.chatContext.Messages = b.chatContext.Messages[b.chatContext.MaxPriorMessages:]
+	}
 }

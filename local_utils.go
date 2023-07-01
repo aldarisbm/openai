@@ -15,25 +15,21 @@ const MaxPriorMessages = 5
 
 type Environment struct {
 	Token            string
-	SystemContext    string
 	MaxPriorMessages int
-	ChatContextRole  string
 	Model            string
 }
 
 // setup is a function that sets up the environment, and returns a ChatBot.
 func setup() *ChatBot {
 	populateEnvironment()
-	Env := NewEnvironment()
+	env := NewEnvironment()
 	return &ChatBot{
-		apiToken:      Env.Token,
-		systemContext: Env.SystemContext,
+		apiToken: env.Token,
 		chatContext: &ChatContext{
-			Role:             Env.ChatContextRole,
-			MaxPriorMessages: Env.MaxPriorMessages,
+			MaxPriorMessages: env.MaxPriorMessages,
 		},
-		client: openai.NewClient(Env.Token),
-		model:  Env.Model,
+		client: openai.NewClient(env.Token),
+		model:  env.Model,
 	}
 }
 
@@ -51,15 +47,12 @@ func populateEnvironment() {
 
 func NewEnvironment() *Environment {
 	token := os.Getenv("TOKEN")
-	systemContext := os.Getenv("SYSTEM_CONTEXT")
 	maxPriorMessagesString := os.Getenv("MAX_PRIOR_MESSAGES")
 	maxPriorMessages, err := strconv.Atoi(maxPriorMessagesString)
 	if err != nil {
 		maxPriorMessages = MaxPriorMessages
 	}
-	chatContextRole := os.Getenv("CHAT_CONTEXT_ROLE")
 
-	// If the token is empty, get it from the user.
 	if token == "" {
 		token = getInput("Provide your OpenAI token")
 	}
@@ -67,16 +60,10 @@ func NewEnvironment() *Environment {
 		panic(err)
 	}
 
-	// If the system context is empty, get it from the user.
-	if systemContext == "" {
-		systemContext = getInput("System context")
-	}
 	model := getModel()
 	return &Environment{
 		Token:            token,
-		SystemContext:    systemContext,
 		MaxPriorMessages: maxPriorMessages,
-		ChatContextRole:  chatContextRole,
 		Model:            model,
 	}
 }
@@ -92,16 +79,6 @@ func getModel() string {
 	}
 	return openai.GPT3Dot5Turbo
 
-}
-
-func getSummaryBetweenThreeBrackets(message string) string {
-	sum := ""
-	start := strings.Index(message, "[[[")
-	end := strings.Index(message, "]]]")
-	if start != -1 && end != -1 {
-		sum = message[start+3 : end]
-	}
-	return fmt.Sprintf("[[[%s]]]", sum)
 }
 
 func getInput(s string) string {

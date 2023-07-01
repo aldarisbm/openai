@@ -8,13 +8,10 @@ import (
 	"net/http"
 )
 
-const CharLimit = 150
-
 func main() {
 	bot := setup()
 	ctx := context.Background()
 
-	fmt.Println("Welcome to the OpenAI Chat Completion")
 	fmt.Printf("You're using: %s\n", bot.model)
 	for {
 		prompt := getInput("Prompt")
@@ -26,6 +23,7 @@ func main() {
 			fmt.Println("Messages cleared...")
 			continue
 		}
+
 		req := bot.getRequest(prompt)
 
 		stream, err := bot.client.CreateChatCompletionStream(ctx, req)
@@ -34,21 +32,22 @@ func main() {
 		}
 
 		if stream.GetResponse().StatusCode != http.StatusOK {
-			body, _ := io.ReadAll(stream.GetResponse().Body)
+			body, err := io.ReadAll(stream.GetResponse().Body)
+			if err != nil {
+				fmt.Printf("error reading body: %v\n", err)
+				continue
+			}
 			fmt.Printf("non 200 resp: %v\n", string(body))
 		}
 
 		defer stream.Close()
 
-		LineCharLimit := CharLimit
-		CurrentLineLength := 0
-		var wordsInLine []string
-
+		var lastMessage string
 		for {
 			response, err := stream.Recv()
-			if errors.Is(err, io.EOF) {
-				bot.processEntireMessage()
-				bot.lastEntireMessage = ""
+			if errors.Is(err, io.EOF) && lastMessage != "" {
+				bot.saveMessage(assistant, lastMessage)
+				lastMessage = ""
 				fmt.Println()
 				break
 			}
@@ -56,14 +55,8 @@ func main() {
 				fmt.Printf("Stream error: %v\n", err)
 			}
 			incomingStr := response.Choices[0].Delta.Content
-			bot.lastEntireMessage += incomingStr
-			CurrentLineLength += len(incomingStr)
-			wordsInLine = append(wordsInLine, incomingStr)
+			lastMessage += incomingStr
 			fmt.Print(incomingStr)
-			if CurrentLineLength >= LineCharLimit {
-				fmt.Println()
-				CurrentLineLength = 0
-			}
 		}
 	}
 }
