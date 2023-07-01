@@ -12,7 +12,7 @@ func main() {
 	bot := setup()
 	ctx := context.Background()
 
-	fmt.Printf("You're using: %s\n", bot.model)
+	fmt.Printf("You're using: %s, max message history: %d \n", bot.model, bot.chatContext.MaxPriorMessages)
 	for {
 		prompt := getInput("Prompt")
 		if prompt == "" {
