@@ -17,24 +17,27 @@ type ChatBot struct {
 }
 
 func (b ChatBot) getRequest(prompt string) openai.ChatCompletionRequest {
-	b.saveMessage(user, prompt)
-	req := b.getMessage()
+	b.saveMessageToContext(user, prompt)
+	req := b.getBaseMessage()
 	b.appendMessages(&req)
 	return req
 }
 
-func (b ChatBot) saveMessage(role, msg string) {
+func (b ChatBot) saveMessageToContext(role, msg string) {
 	b.chatContext.Messages = append(b.chatContext.Messages, openai.ChatCompletionMessage{
 		Role:    role,
 		Content: msg,
 	})
+	if len(b.chatContext.Messages) > b.chatContext.MaxPriorMessages {
+		b.chatContext.Messages = b.chatContext.Messages[len(b.chatContext.Messages)-b.chatContext.MaxPriorMessages:]
+	}
 }
 
 func (b ChatBot) ClearMessages() {
 	b.chatContext.Messages = []openai.ChatCompletionMessage{}
 }
 
-func (b ChatBot) getMessage() openai.ChatCompletionRequest {
+func (b ChatBot) getBaseMessage() openai.ChatCompletionRequest {
 	return openai.ChatCompletionRequest{
 		Model: b.model,
 		Messages: []openai.ChatCompletionMessage{
@@ -51,11 +54,5 @@ func (b ChatBot) getMessage() openai.ChatCompletionRequest {
 }
 
 func (b ChatBot) appendMessages(req *openai.ChatCompletionRequest) {
-	if len(b.chatContext.Messages) <= b.chatContext.MaxPriorMessages {
-		req.Messages = append(req.Messages, b.chatContext.Messages...)
-		return
-	} else {
-		req.Messages = append(req.Messages, b.chatContext.Messages[:b.chatContext.MaxPriorMessages]...)
-		b.chatContext.Messages = b.chatContext.Messages[b.chatContext.MaxPriorMessages:]
-	}
+	req.Messages = append(req.Messages, b.chatContext.Messages...)
 }

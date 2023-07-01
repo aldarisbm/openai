@@ -46,7 +46,7 @@ func main() {
 		for {
 			response, err := stream.Recv()
 			if errors.Is(err, io.EOF) && lastMessage != "" {
-				bot.saveMessage(assistant, lastMessage)
+				bot.saveMessageToContext(assistant, lastMessage)
 				lastMessage = ""
 				fmt.Println()
 				break
