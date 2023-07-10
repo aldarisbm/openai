@@ -66,10 +66,10 @@ func (b ChatBot) getBaseMessage() openai.ChatCompletionRequest {
 				Content: b.systemPrompt,
 			},
 		},
-		N:           1,
-		MaxTokens:   0,
-		Temperature: 0.2,
-		Stream:      true,
+		N:           NumResponses,
+		MaxTokens:   MaxTokens,
+		Temperature: Temperature,
+		Stream:      Stream,
 	}
 }
 
