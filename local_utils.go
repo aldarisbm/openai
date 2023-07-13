@@ -32,8 +32,8 @@ func getModelFromEnv() string {
 	if isChatGPT4Enabled {
 		return openai.GPT4
 	}
-	return openai.GPT3Dot5Turbo
 
+	return openai.GPT3Dot5Turbo
 }
 
 func getUserInput(s string) string {

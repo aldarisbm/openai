@@ -1,6 +1,6 @@
 
-## Cloe
- Conversational Language Optimization Engine
+## Cleo
+ Conversational Language Engine Optimized
 # chatbot in your terminal 
 
 Binary in go to use the openai api to create a chatbot in your terminal
