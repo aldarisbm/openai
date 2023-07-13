@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/sashabaranov/go-openai"
+	"time"
 )
 
 // ChatBot represents a chatbot.
@@ -43,6 +44,7 @@ func (b ChatBot) GetRequest(prompt string) openai.ChatCompletionRequest {
 	b.appendMessages(&req)
 	return req
 }
+
 func (b ChatBot) ClearMessages() {
 	b.chatContext.Messages = []openai.ChatCompletionMessage{}
 }
@@ -79,9 +81,12 @@ func (b ChatBot) appendMessages(req *openai.ChatCompletionRequest) {
 
 func (b ChatBot) PrintHistory() {
 	fmt.Println("*************************")
+	fmt.Println("*************************")
 	fmt.Printf("system prompt: %s\n", b.GetPrompt())
 	for _, msg := range b.chatContext.Messages {
+		time.Sleep(200 * time.Millisecond)
 		fmt.Printf("%s: %s\n", msg.Role, msg.Content)
 	}
+	fmt.Println("*************************")
 	fmt.Println("*************************")
 }

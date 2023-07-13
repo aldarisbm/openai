@@ -13,7 +13,7 @@ type Environment struct {
 }
 
 func GetEnvironment() *Environment {
-	token := os.Getenv("TOKEN")
+	token := os.Getenv("OPENAI_TOKEN")
 	maxPriorMessagesString := os.Getenv("MAX_PRIOR_MESSAGES")
 	maxPriorMessages, err := strconv.Atoi(maxPriorMessagesString)
 	if err != nil {
