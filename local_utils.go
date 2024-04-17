@@ -3,25 +3,12 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/joho/godotenv"
 	"github.com/sashabaranov/go-openai"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 )
-
-func loadEnvFile() {
-	envFileLoc := os.Getenv("OPENAPI_ENV_FILE")
-	if envFileLoc == "" {
-		panic("ENV_FILE is not set")
-	}
-
-	err := godotenv.Load(envFileLoc)
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-}
 
 func getModelFromEnv() string {
 	enableGPT4String := os.Getenv("ENABLE_GPT_4")

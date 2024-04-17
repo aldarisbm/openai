@@ -4,12 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/joho/godotenv"
 	"io"
 	"net/http"
 )
 
 func main() {
-	loadEnvFile()
+	if err := godotenv.Load(); err != nil {
+		panic(err)
+	}
 	bot := New()
 	ctx := context.Background()
 
