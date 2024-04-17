@@ -47,10 +47,3 @@ func getUserInput(s string) string {
 
 	return trimmedInput
 }
-
-func validateToken(token string) error {
-	if len(token) != 51 {
-		return InvalidTokenError
-	}
-	return nil
-}

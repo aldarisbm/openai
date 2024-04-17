@@ -27,9 +27,6 @@ func GetEnvironment() *Environment {
 	if token == "" {
 		token = getUserInput("Provide your OpenAI token")
 	}
-	if err = validateToken(token); err != nil {
-		panic(err)
-	}
 
 	model := getModelFromEnv()
 	return &Environment{
