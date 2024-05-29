@@ -17,7 +17,7 @@ func getModelFromEnv() string {
 		panic(err)
 	}
 	if isChatGPT4Enabled {
-		return openai.GPT4
+		return openai.GPT4o
 	}
 
 	return openai.GPT3Dot5Turbo

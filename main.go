@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/joho/godotenv"
 	"io"
-	"net/http"
 )
 
 func main() {
@@ -44,15 +43,6 @@ func process(ctx context.Context, bot *ChatBot, prompt string) {
 	stream, err := bot.client.CreateChatCompletionStream(ctx, req)
 	if err != nil {
 		fmt.Printf("ChatCompletionStream error: %v\n", err)
-	}
-
-	if stream.GetResponse().StatusCode != http.StatusOK {
-		body, err := io.ReadAll(stream.GetResponse().Body)
-		if err != nil {
-			fmt.Printf("error reading body: %v\n", err)
-			return
-		}
-		fmt.Printf("non 200 resp: %v\n", string(body))
 	}
 	defer stream.Close()
 
